@@ -13,7 +13,7 @@ from pyforms.controls   import ControlCombo
 # Creates or opens a file called mydb with a SQLite3 DB
 db = sqlite3.connect('data/mydb')
 
-class groupWindow(BaseWidget):
+class GroupWindow(BaseWidget):
 
     def __init__(self):
         super(groupWindow,self).__init__('Add Group')
