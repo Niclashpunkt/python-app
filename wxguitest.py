@@ -4,9 +4,12 @@ import os
 
 
 class MainWindow(wx.Frame):
-    def __init__(self, parent, title):
+    def __init__(self, parent, title, test_value):
+
+        _test_value = test_value
+
         wx.Frame.__init__(self, parent, title=title, size=(200,-1))
-        self.control = wx.TextCtrl(self, value="test value", style=wx.TE_MULTILINE)
+        self.control = wx.TextCtrl(self, value=_test_value, style=wx.TE_MULTILINE)
         self.CreateStatusBar()
 
         filemenu = wx.Menu()
@@ -63,6 +66,6 @@ class MainWindow(wx.Frame):
         dlg.Destroy()
 
 app = wx.App(False)
-frame = MainWindow(None, "Hello World")
+frame = MainWindow(None, "Hello World", "hello")
 # frame.Show(True)
 app.MainLoop()

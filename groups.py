@@ -1,15 +1,6 @@
 import sqlite3
 
-import pyforms
-from pyforms            import BaseWidget
-from pyforms.controls   import ControlText
-from pyforms.controls   import ControlButton
-from pyforms.controls   import ControlNumber
-from pyforms.controls   import ControlCombo
-from pyforms.controls   import ControlEmptyWidget
-from pyforms.controls   import ControlList
-from pyforms.controls   import ControlLabel
-from pyforms.controls   import ControlEmptyWidget
+import wx
 
 class Supergroups(object):
 
@@ -17,6 +8,7 @@ class Supergroups(object):
         self._db = db
         self._id = id
         self.load_groups(self._id)
+        # print("init supergroups")
 
     def load_groups(self, _id):
 
@@ -30,17 +22,12 @@ class Supergroups(object):
             groups_list.append(Groups(self._db, g))
         print(groups_list)
 
-        g0 = groups_list[0]
-        w = g0.edit(g0)
+        group0 = groups_list[0]
+        # print("g0:")
+        # print(group0._list)
+        group0._edit()
 
-        return groups_data
-
-        # win = GroupsListWindow(self._db, groups_data)
-        # win.parent = self
-        # EmptyWindow._panel.value = win
-
-        # gw = GroupsListWindow(self._db, groups_data)
-
+        # return groups_data
 
 
 class Groups(object):
@@ -48,70 +35,75 @@ class Groups(object):
     def __init__(self, db, list):
         self._db = db
         self._list = list
-        print(self._list[1])
+        # print(self._list[1])
 
-    def edit(self, _list):
+    def _edit(self):
 
-        win = GroupWindow(_list)
-        win.parent = self
-        win.show()
+        print(self._list)
 
-# class EmptyWindow(BaseWidget):
-#     def __init__(self):
-#         BaseWidget.__init__(self,'Empty window')
-#         self._lable = ControlLabel('Empty!')
-#         self._panel = ControlEmptyWidget()
-
-class GroupWindow(BaseWidget):
-
-    def __init__(self, list):
-        BaseWidget.__init__(self,'Groups window')
-
-        self._list = list
-
-        #Definition of form fields
-        self._idField = ControlText("ID")
-        self._idField.enabled = False
-
-        self._nameField = ControlText("Group Name")
-        self._leaderField = ControlText("Group Leader")
-
-        self._gradeField = ControlCombo("Grade")
-        self._gradeField.add_item('1', '1')
-        self._gradeField.add_item('2')
-        self._gradeField.add_item('3')
-        self._gradeField.add_item('4')
-        self._gradeField.add_item('5')
-        self._gradeField.add_item('6')
-        self._gradeField.add_item('other', '7')
-
-        self._submitBtn = ControlButton('Submit')
-        # self._submitBtn.value =
-
-    def _edit_group(_list):
-        self._idField.value = str(_list[0])
-        self._nameField.value = str(_list[1])
-        self._leaderField.value = str(_list[2])
-        self._gradeField.value = str(_list[4])
-
-class GroupsListWindow(BaseWidget):
-
-    def __init__(self):
-        BaseWidget.__init__(self,'Groups List window')
-
-        # self._db = db
-        # self._groups_data = groups_data
+        app = wx.App(False)
+        frame = GroupWindow(None, "Edit Group Data")
+        frame._edit_group(self._list)
+        app.MainLoop()
 
 
-        #Definition of the forms fields
-        self._groupsList    = ControlList('Groups')
-        self._groupsList.__add__((1,'Rekkared',1,'Sigils',5))
-            # plusFunction    = self.__addPersonBtnAction,
-            # minusFunction   = self.__rmPersonBtnAction)
+class GroupWindow(wx.Frame):
+    def __init__(self, parent, title):
 
-        self._groupsList.horizontal_headers = ['ID', 'Name', 'Super Group ID', 'Leader', 'Grade']
-        self._groupsList.readonly = True
-        self._groupsList.resize_rows_contents()
+        _parent = parent
+        _title = title
+        # _dummy_data = dummy_data
+
+        wx.Frame.__init__(self, parent, title=_title, size=(500,-1))
+        statusBar = self.CreateStatusBar()
+        statusBar.PushStatusText("Edit the group's data and then click 'Save'.")
+
+        _label_margin = 5
+        _ctrl_margin = 75
+        _ctrl_offset_list = []
+        _label_offset_list = []
+        for row in range(0,6):
+            _ctrl_offset = 20 + 20*row + 3*row
+            _label_offset = _ctrl_offset + 3
+            _ctrl_offset_list.append(_ctrl_offset)
+            _label_offset_list.append(_label_offset)
+
+        # print(_label_offset_list)
+
+        self._idLabel = wx.StaticText(self, wx.ID_ANY, 'Group ID',    (_label_margin,_label_offset_list[0]))
+        self._nameLabel = wx.StaticText(self, wx.ID_ANY, 'Name',  (_label_margin,_label_offset_list[1]))
+        self._leaderLabel = wx.StaticText(self, wx.ID_ANY, 'Leader',  (_label_margin,_label_offset_list[2]))
+        self._gradeLabel = wx.StaticText(self, wx.ID_ANY, 'Grade',  (_label_margin,_label_offset_list[3]))
+
+
+
+        self._idField = wx.TextCtrl(self,wx.ID_ANY, "2",    (_ctrl_margin,_ctrl_offset_list[0]), (20,20), style=wx.TE_READONLY)
+        self._nameField = wx.TextCtrl(self,wx.ID_ANY, "",   (_ctrl_margin,_ctrl_offset_list[1]))
+        self._leaderField = wx.TextCtrl(self,wx.ID_ANY, "", (_ctrl_margin,_ctrl_offset_list[2]))
+        self._gradeField = wx.ComboBox(self, wx.ID_ANY, "", (_ctrl_margin,_ctrl_offset_list[3]), choices=['1','2','3','4','5','6','Other'], style=0)
+        self._gradeField.SetSelection(0)
+        self._submitBtn = wx.Button(self, wx.ID_ANY, "Submit", (_label_margin,_ctrl_offset_list[5]))
+
+
+        # Use some sizers to see layout options
+        # self._sizer = wx.BoxSizer(wx.VERTICAL)
+        # self._sizer.Add(self._idLabel, 0, wx.EXPAND)
+        # self._sizer.Add(self._idField, 0, wx.EXPAND)
+        # self._sizer.Add(self._nameField, 0, wx.EXPAND)
+        #
+        # self.SetSizer(self._sizer)
+        # self.SetAutoLayout(1)
+        # self._sizer.Fit(self)
+        self.Show()
+
+    def _edit_group(self, _dummy_data):
+
+        self._idField.SetValue(str(_dummy_data[0]))
+        self._nameField.SetValue(_dummy_data[1])
+        self._leaderField.SetValue(_dummy_data[3])
+        self._gradeField.SetSelection(_dummy_data[4] - 1)
+
+        # print(_dummy_data)
 
 
 # Creates or opens a file called mydb with a SQLite3 DB
@@ -119,12 +111,5 @@ db = sqlite3.connect('data/mydb.db')
 
 
 
-# Execute the application
-if __name__ == "__main__":   pyforms.start_app( GroupsListWindow )
-
 s = Supergroups(db, 1)
-groups_data = s.load_groups
-
-list = s.load_groups
-print("S:")
-print(list)
+dummy_data = (1, 'Rekkared', 1, 'Sigils', 5)
