@@ -10,6 +10,7 @@ class Supergroups(object):
         self.load_groups(self._id)
         # print("init supergroups")
 
+
     def load_groups(self, _id):
 
         cursor_groups = self._db.cursor()
@@ -22,13 +23,31 @@ class Supergroups(object):
             groups_list.append(Groups(self._db, g))
         # print(groups_list)
 
-        group0 = groups_list[0]
-        # print("g0:")
-        # print(group0._list)
-        group0._edit()
+        frame = GroupListWindow(None, "hello")
+        frame._display_groups(groups_data, groups_list, self)
 
-        # return groups_data
+    def refresh_groups(self, _id, _frame):
 
+        cursor_groups = self._db.cursor()
+        cursor_groups.execute('''SELECT * FROM groups WHERE super_group_id = ?;''', (str(self._id)))
+        groups_data = cursor_groups.fetchall()
+
+        groups_list = []
+        for g in groups_data:
+            # print(g)
+            groups_list.append(Groups(self._db, g))
+
+        _frame._display_groups(groups_data, groups_list, self)
+
+        # group0 = groups_list[0]
+
+    #     return groups_list
+    #
+    #
+    #     # group0._edit()
+    # def _edit_group(self, group):
+    #     groups_list = load_groups()
+    #     print("groups_list loaded")
 
 class Groups(object):
 
@@ -41,7 +60,7 @@ class Groups(object):
 
         # print(self._list)
 
-        app = wx.App(False)
+        # app = wx.App(False)
         dlg = GroupWindow(None, "", "edit")
         dlg._edit_group(self._list, self)
 
@@ -60,9 +79,10 @@ class Groups(object):
                 _grade)
 
             self._update(self._list, _new_data)
+            return True
 
         dlg.Destroy()
-        app.MainLoop()
+        # app.MainLoop()
 
     def _update(self, _list, _new_data):
 
@@ -74,6 +94,7 @@ class Groups(object):
             (_new_data[1], _new_data[3], _new_data[4], _list[0]))
 
             self._db.commit()
+
 
 
 
@@ -143,30 +164,84 @@ class GroupWindow(wx.Dialog):
         self._nameField.SetValue(_data[1])
         self._leaderField.SetValue(_data[3])
         self._gradeField.SetSelection(_data[4] - 1)
-        # print(_dummy_data)
 
-    # def _save(self, event):
-    #
-    #     _new_data = (
-    #         int(self._idField.GetValue()),
-    #         self._nameField.GetValue(),
-    #         "",
-    #         self._leaderField.GetValue(),
-    #         self._gradeField.GetSelection()+1)
-    #     print(_new_data)
+class GroupListWindow(wx.Frame):
+    def __init__(self, parent, title):
 
-        # print(_dialog_mode)
+        # _groups_list = groups_list
+        # _supergroup = supergroup
+        _parent = parent
+        _title = "Groups in Supergroup XY"
+
+        wx.Frame.__init__(self, parent, title=_title, size=(500,300))
+
+        panel = wx.Panel(self, -1)
+
+        _margin = 5
+
+        self._listLabel = wx.StaticText(panel, wx.ID_ANY, 'Groups', (_margin,_margin))
+
+        self._listCtrl = wx.ListCtrl(panel, wx.ID_ANY, (_margin,25), style=wx.LC_REPORT)
+        self._listCtrl.AppendColumn("ID", format=wx.LIST_FORMAT_LEFT, width=50)
+        self._listCtrl.AppendColumn("Name", format=wx.LIST_FORMAT_LEFT, width=wx.LIST_AUTOSIZE)
+        self._listCtrl.AppendColumn("Leader", format=wx.LIST_FORMAT_LEFT, width=wx.LIST_AUTOSIZE)
+        self._listCtrl.AppendColumn("Grade", format=wx.LIST_FORMAT_LEFT, width=wx.LIST_AUTOSIZE)
+        self._listCtrl.AppendColumn("", format=wx.LIST_FORMAT_LEFT, width=wx.LIST_AUTOSIZE)
+
+        self._editBtn = wx.Button(panel, wx.ID_ANY, "Edit Selected", (_margin, 200))
+        self._createBtn = wx.Button(panel, wx.ID_ANY, "Create New Group", (_margin+100, 200))
+
+        # self._editBtn.Bind(wx.EVT_BUTTON, self._edit_selected(self, _groups_list))
+        # self._editBtn.Bind(wx.EVT_BUTTON, lambda event, _groups_list=_groups_list, _supergroup=_supergroup: self._edit_selected(event, _groups_list, _supergroup))
+        # self._createBtn.Bind(wx.EVT_BUTTON, self._create)
 
 
-    #     # g.update()
-    #
-    # def _exit(self, event):
-    #     print("abort")
+
+    def _display_groups(self, _groups_data, _groups_list, _supergroup):
+
+        # groups_list = _groups_list
+
+        self._editBtn.Bind(wx.EVT_BUTTON, lambda event, _groups_list=_groups_list, _supergroup=_supergroup: self._edit_selected(event, _groups_list, _supergroup))
+        self._createBtn.Bind(wx.EVT_BUTTON, self._create)
+
+        for g in _groups_data:
+
+            _index = self._listCtrl.InsertItem(0, str(g[0]))
+            # print(g[0])
+            self._listCtrl.SetItem(_index, 1, str(g[1]))
+            self._listCtrl.SetItem(_index, 2, str(g[3]))
+            self._listCtrl.SetItem(_index, 3, str(g[4]))
+            # self._listCtrl.SetItem(_index, 3, )
+
+        self.Show()
+
+    def _edit_selected(self, event, _groups_list, _supergroup):
+        # print(_groups_list)
+        _selection = self._listCtrl.GetFirstSelected()
+
+
+        print(_supergroup)
+
+        # print(int(_selected_id))
+        if _selection > -1 and _selection <= self._listCtrl.GetColumnCount():
+        # if 1 == 1:
+            # print("edit!")
+            _selected_id = self._listCtrl.GetItemText(_selection)
+            group_to_edit = _groups_list[int(_selected_id)-1]
+            if group_to_edit._edit() is True:
+                self._listCtrl.DeleteAllItems()
+                _supergroup.refresh_groups(_supergroup._id, self)
+            # _groups_list[_selection]._edit()
+
+    def _create(self, event):
+        print("New")
+
 
 # Creates or opens a file called mydb with a SQLite3 DB
 db = sqlite3.connect('data/mydb.db')
 
 
-
+app = wx.App(False)
 s = Supergroups(db, 1) #requires database object and the id of the supergroup
 # dummy_data = (1, 'Rekkared', 1, 'Sigils', 5)
+app.MainLoop()
