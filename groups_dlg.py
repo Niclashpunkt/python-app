@@ -18,9 +18,9 @@ class Supergroups(object):
 
         groups_list = []
         for g in groups_data:
-            print(g)
+            # print(g)
             groups_list.append(Groups(self._db, g))
-        print(groups_list)
+        # print(groups_list)
 
         group0 = groups_list[0]
         # print("g0:")
@@ -39,19 +39,46 @@ class Groups(object):
 
     def _edit(self):
 
-        print(self._list)
+        # print(self._list)
 
         app = wx.App(False)
-        frame = GroupWindow(None, "", "edit")
-        frame._edit_group(self._list, self)
+        dlg = GroupWindow(None, "", "edit")
+        dlg._edit_group(self._list, self)
+
+        if dlg.ShowModal() == wx.ID_OK:
+
+            if dlg._gradeField.GetSelection()+1 is 0:
+                _grade = dlg._gradeField.GetValue()
+            else:
+                _grade = dlg._gradeField.GetSelection()+1
+
+            _new_data = (
+                int(dlg._idField.GetValue()),
+                dlg._nameField.GetValue(),
+                self._list[2],
+                dlg._leaderField.GetValue(),
+                _grade)
+
+            self._update(self._list, _new_data)
+
+        dlg.Destroy()
         app.MainLoop()
 
     def _update(self, _list, _new_data):
 
-        print("updated!")
+        if _list != _new_data:
+            # print("update")
+            cursor_update = self._db.cursor()
+            print(_new_data)
+            cursor_update.execute('''UPDATE groups SET name = ?, leader = ?, grade = ? WHERE id = ? ''',
+            (_new_data[1], _new_data[3], _new_data[4], _list[0]))
+
+            self._db.commit()
 
 
-class GroupWindow(wx.Frame):
+
+
+class GroupWindow(wx.Dialog):
     def __init__(self, parent, title, dialog_mode):
 
         _parent = parent
@@ -63,9 +90,9 @@ class GroupWindow(wx.Frame):
 
         # _dummy_data = dummy_data
 
-        wx.Frame.__init__(self, parent, title=_title, size=(500,-1))
-        statusBar = self.CreateStatusBar()
-        statusBar.PushStatusText(_status_text)
+        wx.Dialog.__init__(self, parent, title=_title, size=(500,-1))
+        # statusBar = self.CreateStatusBar()
+        # statusBar.PushStatusText(_status_text)
 
         _label_margin = 5
         _ctrl_margin = 75
@@ -91,11 +118,11 @@ class GroupWindow(wx.Frame):
         self._leaderField = wx.TextCtrl(self,wx.ID_ANY, "", (_ctrl_margin,_ctrl_offset_list[2]))
         self._gradeField = wx.ComboBox(self, wx.ID_ANY, "", (_ctrl_margin,_ctrl_offset_list[3]), choices=['1','2','3','4','5','6','Other'], style=0)
         self._gradeField.SetSelection(0)
-        self._submitBtn = wx.Button(self, wx.ID_ANY, "Save", (_label_margin,_ctrl_offset_list[5]))
-        self._exitBtn = wx.Button(self, wx.ID_ANY, "Cancel", (_ctrl_margin + _label_margin*6,_ctrl_offset_list[5]))
+        self._submitBtn = wx.Button(self, wx.ID_OK, "Save", (_label_margin,_ctrl_offset_list[5]))
+        self._exitBtn = wx.Button(self, wx.ID_CANCEL , "Cancel", (_ctrl_margin + _label_margin*6,_ctrl_offset_list[5]))
 
-        self._submitBtn.Bind(wx.EVT_BUTTON, self._save)
-        self._exitBtn.Bind(wx.EVT_BUTTON, self._exit)
+        # self._submitBtn.Bind(wx.EVT_BUTTON, self._save)
+        # self._exitBtn.Bind(wx.EVT_BUTTON, self._exit)
 
         # Use some sizers to see layout options
         # self._sizer = wx.BoxSizer(wx.VERTICAL)
@@ -106,7 +133,7 @@ class GroupWindow(wx.Frame):
         # self.SetSizer(self._sizer)
         # self.SetAutoLayout(1)
         # self._sizer.Fit(self)
-        self.Show()
+
 
     def _edit_group(self, _data, _g):
 
@@ -118,23 +145,23 @@ class GroupWindow(wx.Frame):
         self._gradeField.SetSelection(_data[4] - 1)
         # print(_dummy_data)
 
-    def _save(self, event):
+    # def _save(self, event):
+    #
+    #     _new_data = (
+    #         int(self._idField.GetValue()),
+    #         self._nameField.GetValue(),
+    #         "",
+    #         self._leaderField.GetValue(),
+    #         self._gradeField.GetSelection()+1)
+    #     print(_new_data)
 
-        _new_data = (
-            int(self._idField.GetValue()),
-            self._nameField.GetValue(),
-            "",
-            self._leaderField.GetValue(),
-            self._gradeField.GetSelection()+1)
-        print(_new_data)
-        
         # print(_dialog_mode)
 
 
-        # g.update()
-
-    def _exit(self, event):
-        print("abort")
+    #     # g.update()
+    #
+    # def _exit(self, event):
+    #     print("abort")
 
 # Creates or opens a file called mydb with a SQLite3 DB
 db = sqlite3.connect('data/mydb.db')
