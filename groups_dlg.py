@@ -255,6 +255,7 @@ class GroupListWindow(wx.Frame):
             else:
                 self._listCtrl.SetItem(_index, 3, str(g[4]))
 
+            self._listCtrl.SetItemData(_index, g[4])
         self.Show()
 
     def _edit_selected(self, event, _groups_list, _supergroup):
