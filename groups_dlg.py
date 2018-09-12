@@ -16,9 +16,8 @@ class Supergroups(object):
 
         groups_list = []
         for g in groups_data:
-            # print(g)
             groups_list.append(Groups(self._db, g))
-        # print(groups_list)
+
         frame = GroupListWindow(None, "")
         frame._display_groups(groups_data, groups_list, self)
 
@@ -158,9 +157,6 @@ class GroupWindow(wx.Dialog):
         self._submitBtn = wx.Button(self, wx.ID_OK, "Save", (_label_margin,_ctrl_offset_list[5]))
         self._exitBtn = wx.Button(self, wx.ID_CANCEL , "Cancel", (_ctrl_margin + _label_margin*6,_ctrl_offset_list[5]))
 
-        # self._submitBtn.Bind(wx.EVT_BUTTON, self._save)
-        # self._exitBtn.Bind(wx.EVT_BUTTON, self._exit)
-
         # Use some sizers to see layout options
         # self._sizer = wx.BoxSizer(wx.VERTICAL)
         # self._sizer.Add(self._idLabel, 0, wx.EXPAND)
@@ -195,18 +191,47 @@ class GroupListWindow(wx.Frame):
 
         _margin = 5
 
-        self._listLabel = wx.StaticText(panel, wx.ID_ANY, 'Groups', (_margin,_margin))
+        # self._listLabel = wx.StaticText(panel, wx.ID_ANY, 'Groups', (_margin,_margin))
 
-        self._listCtrl = wx.ListCtrl(panel, wx.ID_ANY, (_margin,25), style=wx.LC_REPORT)
+        # self._listCtrl = wx.ListCtrl(panel, wx.ID_ANY, (_margin,25), style=wx.LC_REPORT)
+        self._listCtrl = wx.ListCtrl(panel, wx.ID_ANY, (-1,-1), style=wx.LC_REPORT)
         self._listCtrl.AppendColumn("ID", format=wx.LIST_FORMAT_LEFT, width=40)
         self._listCtrl.AppendColumn("Name", format=wx.LIST_FORMAT_LEFT, width=wx.LIST_AUTOSIZE)
         self._listCtrl.AppendColumn("Leader", format=wx.LIST_FORMAT_LEFT, width=wx.LIST_AUTOSIZE)
         self._listCtrl.AppendColumn("Grade", format=wx.LIST_FORMAT_LEFT, width=60)
         # self._listCtrl.AppendColumn("", format=wx.LIST_FORMAT_LEFT, width=wx.LIST_AUTOSIZE)
 
-        self._editBtn = wx.Button(panel, wx.ID_ANY, "Edit Selected", (_margin, 190))
-        self._createBtn = wx.Button(panel, wx.ID_ANY, "Create New Group", (93, 190))
-        self._deleteBtn = wx.Button(panel, wx.ID_ANY, "Delete Selected", ((_margin+100)*2, 190))
+        self._editBtn = wx.Button(panel, wx.ID_ANY, "Edit Selected", (-1,-1))
+        self._createBtn = wx.Button(panel, wx.ID_ANY, "Create New Group", (-1,-1))
+        self._deleteBtn = wx.Button(panel, wx.ID_ANY, "Delete Selected", (-1,-1))
+
+        vline = wx.StaticLine(panel, wx.ID_ANY, (-1,-1), (-1,-1), style=wx.LI_VERTICAL)
+
+        self._reportBtn = wx.Button(panel, wx.ID_ANY, "Export List")
+
+        btn_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        btn_sizer.Add(self._editBtn, 1, wx.EXPAND)
+        btn_sizer.Add(self._createBtn, 1, wx.EXPAND | wx.LEFT, 5)
+        btn_sizer.Add(self._deleteBtn, 1, wx.EXPAND | wx.LEFT, 5)
+
+        list_sizer = wx.BoxSizer(wx.VERTICAL)
+        list_sizer.Add(self._listCtrl, 1, wx.EXPAND | wx.BOTTOM, 5)
+        list_sizer.Add(btn_sizer, 0, wx.BOTTOM, 5)
+
+        tools_sizer = wx.BoxSizer(wx.VERTICAL)
+        tools_sizer.Add(self._reportBtn, 1, wx.EXPAND)
+
+
+        panel_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        panel_sizer.Add(list_sizer, 1, wx.ALL | wx.EXPAND, 5)
+        panel_sizer.Add((5,-1))
+        panel_sizer.Add(vline, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+        panel_sizer.Add((5,-1))
+        panel_sizer.Add(tools_sizer, 0,wx.ALL, 5)
+
+        panel.SetSizer(panel_sizer)
+        panel.SetAutoLayout(1)
+        panel_sizer.Fit(self)
 
 
     def _display_groups(self, _groups_data, _groups_list, _supergroup):
@@ -214,6 +239,9 @@ class GroupListWindow(wx.Frame):
         self._editBtn.Bind(wx.EVT_BUTTON, lambda event, _groups_list=_groups_list, _supergroup=_supergroup: self._edit_selected(event, _groups_list, _supergroup))
         self._createBtn.Bind(wx.EVT_BUTTON, lambda event, _supergroup=_supergroup: self._create(event, _supergroup))
         self._deleteBtn.Bind(wx.EVT_BUTTON, lambda event, _groups_list=_groups_list, _supergroup=_supergroup: self._delete(event, _groups_list, _supergroup))
+
+        # self._reportBtn.Bind(wx.EVT_BUTTON, lambda event, _groups_list=_groups_list: self._report(event, _groups_list))
+
 
         for g in _groups_data:
 
@@ -273,6 +301,7 @@ class GroupListWindow(wx.Frame):
         if g._dialog("new", _supergroup._id) is True:
             self._listCtrl.DeleteAllItems()
             _supergroup.refresh_groups(_supergroup._id, self)
+
 
 # Creates or opens a file called mydb with a SQLite3 DB
 db = sqlite3.connect('data/mydb.db')
