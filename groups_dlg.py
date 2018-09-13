@@ -240,11 +240,9 @@ class GroupListWindow(wx.Frame):
 
         # self._reportBtn.Bind(wx.EVT_BUTTON, lambda event, _groups_list=_groups_list: self._report(event, _groups_list))
 
-
         for g in _groups_data:
 
             _index = self._listCtrl.InsertItem(0, str(g[0]))
-            # print(g[0])
             self._listCtrl.SetItem(_index, 1, str(g[1]))
             self._listCtrl.SetItem(_index, 2, str(g[3]))
 
