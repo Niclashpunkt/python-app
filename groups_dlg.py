@@ -1,3 +1,8 @@
+
+# Prototype of a Python Desktop Application
+# Build for the course Tech Basics I in the Major Digital Media at Leuphana Univerity
+# By Niclas Hedemann
+
 import sqlite3
 import wx
 
