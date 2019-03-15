@@ -1,6 +1,6 @@
 import sqlite3
 import wx
-import groups_dlg as m
+import management as m
 
 class Entry(object):
 
@@ -24,7 +24,8 @@ class EntryWindow(wx.Frame):
         self._groupsBtn = wx.Button(self, wx.NewId(), 'Manage &Groups', (-1, -1), wx.DefaultSize)
         # staline = wx.StaticLine(self, wx.NewId(), (-1, -1), (-1, 2), wx.LI_HORIZONTAL)
 
-        self._groupsBtn.Bind(wx.EVT_BUTTON,  lambda event: self._manageGroups(event))
+        self._eventsBtn.Bind(wx.EVT_BUTTON,  lambda event: self._manage_events(event))
+        self._groupsBtn.Bind(wx.EVT_BUTTON,  lambda event: self._manage_groups(event))
         # self._groupsBtn.Bind(wx.EVT_BUTTON, lambda event, _supergroup=_supergroup: self._edit_selected(event, _groups_list, _supergroup))
 
         b = 5
@@ -46,7 +47,12 @@ class EntryWindow(wx.Frame):
 
         self.Show()
 
-    def _manageGroups(self, event):
+    def _manage_events(self, event):
+        print("manage events called")
+        m.e.load_events()
+        self.Destroy()
+
+    def _manage_groups(self, event):
         print("manage groups called")
         m.s.load_groups(m.s._id)
         self.Destroy()
