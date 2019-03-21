@@ -15,7 +15,7 @@ class Supergroups(object):
         print("Supergroups init!")
         # self.load_groups(self._id)
 
-    def load_groups(self, _id):
+    def load_groups(self, _id, _frame):
 
         # Get datasets of all groups from database
         cursor_groups = self._db.cursor()
@@ -24,25 +24,37 @@ class Supergroups(object):
 
         # Create a groups object for every dataset
         groups_objects = []
+        group_names = []
+        i = 0
         for g in groups_data:
             groups_objects.append(Groups(self._db, g))
+            group_names.append(groups_data[i][1])
+            i += 1
 
-        # Show the groups list view window and populate the table.
-        # frame = EntryWindow(None, "")
-        frame = m_dlgs.ListWindow(None, "", "groups")
-        frame._display_groups(groups_data, groups_objects, self)
+        # Show the list view window and populate the table.
 
-    def refresh_groups(self, _id, _frame):
+        if _frame is not "load_names" and _frame is not "load_data":
+            print("_frame is not 'load'")
+            if _frame is "":
+                _frame = m_dlgs.ListWindow(None, "Groups in Supergroup", "groups")
+            _frame._display_groups(groups_data, groups_objects, self)
+        elif _frame is "load_data":
+            return groups_data
+        elif _frame is "load_names":
+            return group_names
 
-        cursor_groups = self._db.cursor()
-        cursor_groups.execute('''SELECT * FROM groups WHERE super_group_id = ?;''', (str(self._id)))
-        groups_data = cursor_groups.fetchall()
 
-        groups_objects = []
-        for g in groups_data:
-            groups_objects.append(Groups(self._db, g))
-
-        _frame._display_groups(groups_data, groups_objects, self)
+    # def refresh_groups(self, _id, _frame):
+    #
+    #     cursor_groups = self._db.cursor()
+    #     cursor_groups.execute('''SELECT * FROM groups WHERE super_group_id = ?;''', (str(self._id)))
+    #     groups_data = cursor_groups.fetchall()
+    #
+    #     groups_objects = []
+    #     for g in groups_data:
+    #         groups_objects.append(Groups(self._db, g))
+    #
+    #     _frame._display_groups(groups_data, groups_objects, self)
 
 class Groups(object):
 
@@ -147,7 +159,7 @@ class ManageEvents(object):
         print("Events init!")
         # self.load_groups(self._id)
 
-    def load_events(self):
+    def load_events(self, _frame):
 
         # Get datasets of all groups from database
         cursor_events = self._db.cursor()
@@ -156,25 +168,22 @@ class ManageEvents(object):
 
         # Create a events object for every dataset
         events_objects = []
+        event_names = []
+        i = 0
         for e in _data:
             events_objects.append(Events(self._db, e))
+            event_names.append(_data[i][1])
+            i += 1
 
         # Show the list view window and populate the table.
-        # frame = EntryWindow(None, "")
-        frame = m_dlgs.ListWindow(None, "", "events")
-        frame._display_events(_data, events_objects)
-
-    def refresh_events(self, _frame):
-
-        cursor_events = self._db.cursor()
-        cursor_events.execute('''SELECT * FROM events''')
-        _data = cursor_events.fetchall()
-
-        events_objects = []
-        for e in _data:
-            events_objects.append(Events(self._db, e))
-
-        _frame._display_events(_data, events_objects)
+        if _frame is not "load_names" and _frame is not "load_data":
+            if _frame is "":
+                _frame = m_dlgs.ListWindow(None, "Events", "events")
+            _frame._display_events(_data, events_objects)
+        elif _frame is "load_data":
+            return _data
+        elif _frame is "load_names":
+            return event_names
 
 class Events(object):
 
@@ -257,9 +266,9 @@ class Events(object):
 
 
 # Creates or opens a file called mydb with a SQLite3 DB
-db = sqlite3.connect('data/mydb.db')
+db = sqlite3.connect('data/app.db')
 
 s = Supergroups(db, 1) #requires database object and the id of the supergroup.
-e = ManageEvents(db) #requires database object and the id of the supergroup.
+e = ManageEvents(db) #requires database object.
 
 # # As of now, the id is hardcoded, as the app only deals with one supergroup.
