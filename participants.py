@@ -8,32 +8,29 @@ class ManageParticipants(object):
 
     def __init__(self, db):
         self._db = db
-        print("Participants init!")
-        # self.load_groups(self._id)
 
     def load_participants(self, _frame, _mode, _selection_value):
 
+        # The group or event name selected in the filter drop-down menu
         _requested_name = _selection_value
-
-        # print(_mode)
 
         if _mode is not "":
 
             if _mode is "group":
 
-                # print("mode is group")
                 _request_data = m.s.load_groups(m.s._id, "load_data")
                 _complementary_data = m.e.load_events("load_data")
                 _sql_string = '''SELECT * FROM participants WHERE group_id = ?'''
+
                 # index of id of complimentary element in db. Here 2 because the event id is wanted.
                 _id_index = 2
 
             elif _mode is "event":
 
-                # print("mode is event")
                 _complementary_data = m.s.load_groups(m.s._id, "load_data")
                 _request_data = m.e.load_events("load_data")
                 _sql_string = '''SELECT * FROM participants WHERE event_id = ?'''
+
                 # index of id of complimentary element in db. Here 1 because the group id is wanted.
                 _id_index = 1
 
@@ -59,16 +56,15 @@ class ManageParticipants(object):
                     else:
                         _name = _id
 
+                # Convert tuple to list, then delete group id and event id and add group/event name
                 d_list = list(d)
                 d_list.pop(1)
                 d_list.pop(1)
                 d_list.insert(1,_name)
-                # print(d_list)
                 d = tuple(d_list)
-                # print(d)
 
                 _new_data.append(d)
-            # print(_new_data)
+
             _data = _new_data
 
         else:
@@ -82,6 +78,8 @@ class ManageParticipants(object):
         # Show the list view window and populate the table.
         if _frame is "":
             _frame = m_dlgs.ListWindow(None, "Participants", "participants")
+
+        #If a frame exists (i.e. the data for the table view is reloaded) just populate the table.
         _frame._display_participants(_data, parts_objects, _requested_name, _mode)
 
 class Participants(object):
@@ -104,7 +102,7 @@ class Participants(object):
         # Show dialog window and retrieve entered values if user pressed OK
         if dlg.ShowModal() == wx.ID_OK:
 
-            # If the id field hasn't been populated before (i.e. a new event is created), leave it blank.
+            # If the id field hasn't been populated before (i.e. a new entry is created), leave it blank.
             # Else, process it as integer.
             if dlg._idField.GetValue() == "":
                 _id = ""
@@ -122,27 +120,17 @@ class Participants(object):
             _group_id = ""
             _event_id = ""
 
-            # print("in dialog")
-            # print(_group_string)
-            # print(_event_string)
-
+            # Convert selected group and event names back to ids
             for d in _data_lists:
                 for item in d:
-                    # print("comparing "+_group_string+" and "+item[1])
-                    # print("comparing "+_event_string+" and "+item[1])
+
                     if item[1] == _group_string:
-                        # print("true")
                         _group_id = item[0]
-                        # print("group_id: "+str(_group_id))
-                        break
-                    elif item[1] == _event_string:
-                        _event_id = item[0]
-                        # print("event_id: "+str(_event_id))
                         break
 
-            # print("found:")
-            # print(_group_id)
-            # print(_event_id)
+                    elif item[1] == _event_string:
+                        _event_id = item[0]
+                        break
 
             _new_data = (
                 _id,

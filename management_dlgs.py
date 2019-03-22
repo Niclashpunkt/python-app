@@ -6,7 +6,7 @@ import participants as p
 import entry as e
 
 
-# The dialog where the user can edit or create group data
+# The dialog where the user can edit or create data
 class DetailWindow(wx.Dialog):
     def __init__(self, parent, _title, dialog_mode, list_mode):
 
@@ -127,11 +127,8 @@ class DetailWindow(wx.Dialog):
     def _edit_participants(self, _data, _requested_name, _participants_mode):
 
         self.dialog_mode = "edit"
-        print("edit participants")
-        print(_data)
-        print(_requested_name)
-        print(_participants_mode)
 
+        # Set drop-downs to values from the data set to edit.
         if _participants_mode is "group":
             _group_selection = self._groupChoiceField.FindString(_requested_name)
             self._groupChoiceField.SetSelection(_group_selection)
@@ -179,9 +176,6 @@ class ListWindow(wx.Frame):
 
         elif _list_mode is "events":
 
-            # wx.Frame.__init__(self, parent, title=_title, size=(500,300))
-            # panel = wx.Panel(self, -1)
-
             _subject = "Event"
 
             # Create table and add columns.
@@ -193,9 +187,6 @@ class ListWindow(wx.Frame):
             self._listCtrl.AppendColumn("Reduced Fee", format=wx.LIST_FORMAT_LEFT, width=60)
 
         elif _list_mode is "participants":
-
-            # wx.Frame.__init__(self, parent, title=_title, size=(500,300))
-            # panel = wx.Panel(self, -1)
 
             _subject = "Entry"
 
@@ -259,9 +250,6 @@ class ListWindow(wx.Frame):
 
         tools_sizer = wx.BoxSizer(wx.VERTICAL)
         tools_sizer.Add(self._menuBtn, 1, wx.EXPAND)
-        # tools_sizer.Add(self._groupSelectionField, 1, wx.EXPAND)
-        # tools_sizer.Add(self._eventSelectionField, 1, wx.EXPAND)
-        # tools_sizer.Add(self._displayBtn, 1, wx.EXPAND)
 
         # Lay out group view sizer and sidebar horizontally.
         panel_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -271,7 +259,6 @@ class ListWindow(wx.Frame):
         panel_sizer.Add((5,-1))
         panel_sizer.Add(tools_sizer, 0,wx.ALL, 5)
 
-        # panel_sizer.SetSizeHints(panel)
         panel.SetSizer(panel_sizer)
         panel.SetAutoLayout(1)
         panel_sizer.Fit(self)
@@ -283,8 +270,6 @@ class ListWindow(wx.Frame):
         self._editBtn.Bind(wx.EVT_BUTTON, lambda event, _data_objects=_data_objects, _supergroup=_supergroup, _edit_mode="group", _requested_name="", _participants_mode="": self._edit_selected(event, _data_objects, _supergroup, _edit_mode, _requested_name, _participants_mode))
         self._createBtn.Bind(wx.EVT_BUTTON, lambda event, _supergroup=_supergroup, _creation_mode="group": self._create(event, _supergroup, _creation_mode))
         self._deleteBtn.Bind(wx.EVT_BUTTON, lambda event, _data_objects=_data_objects, _supergroup=_supergroup, _delete_mode="group": self._delete(event, _data_objects, _supergroup, _delete_mode))
-
-        # self._reportBtn.Bind(wx.EVT_BUTTON, lambda event, _groups_list=_groups_list: self._report(event, _groups_list))
 
         for g in _data:
 
@@ -306,8 +291,6 @@ class ListWindow(wx.Frame):
         self._createBtn.Bind(wx.EVT_BUTTON, lambda event, _supergroup=0, _creation_mode="event": self._create(event, _supergroup, _creation_mode))
         self._deleteBtn.Bind(wx.EVT_BUTTON, lambda event, _data_objects=_data_objects, _supergroup=0, _delete_mode="event": self._delete(event, _data_objects, _supergroup, _delete_mode))
 
-        # self._reportBtn.Bind(wx.EVT_BUTTON, lambda event, _groups_list=_groups_list: self._report(event, _groups_list))
-
         for e in _data:
 
             _index = self._listCtrl.InsertItem(0, str(e[0]))
@@ -320,16 +303,10 @@ class ListWindow(wx.Frame):
 
     def _display_participants(self, _data, _data_objects, _requested_name, _participants_mode):
 
-        print("display participants")
-        print(_data)
-        print(_requested_name)
-
         # Bind ui button events to functions
         self._editBtn.Bind(wx.EVT_BUTTON, lambda event, _data_objects=_data_objects, _supergroup=0, _edit_mode="participants", _requested_name=_requested_name, _participants_mode=_participants_mode: self._edit_selected(event, _data_objects, _supergroup, _edit_mode, _requested_name, _participants_mode))
         self._createBtn.Bind(wx.EVT_BUTTON, lambda event, _supergroup=0, _creation_mode="participants": self._create(event, _supergroup, _creation_mode))
         self._deleteBtn.Bind(wx.EVT_BUTTON, lambda event, _data_objects=_data_objects, _supergroup=0, _delete_mode="participants": self._delete(event, _data_objects, _supergroup, _delete_mode))
-
-        # self._reportBtn.Bind(wx.EVT_BUTTON, lambda event, _groups_list=_groups_list: self._report(event, _groups_list))
 
         for p in _data:
 
@@ -337,7 +314,6 @@ class ListWindow(wx.Frame):
             self._listCtrl.SetItem(_index, 1, str(p[1]))
             self._listCtrl.SetItem(_index, 2, str(p[2]))
             self._listCtrl.SetItem(_index, 3, str(p[3]))
-            # self._listCtrl.SetItem(_index, 4, str(p[4]))
 
         self.Show()
 
@@ -389,6 +365,7 @@ class ListWindow(wx.Frame):
                     entry_to_delete = d
                 i += 1
 
+            # If delete dialog was successful, refresh table.
             if entry_to_delete._delete() is True:
                 self._listCtrl.DeleteAllItems()
                 if _delete_mode is "group":
@@ -400,6 +377,7 @@ class ListWindow(wx.Frame):
 
 
     def _create(self, event, _supergroup, _creation_mode):
+        # Create new object, then call its dialog method with the 'new' flag.
         if _creation_mode is "group":
             c = m.Groups(m.db, "")
 
@@ -422,15 +400,15 @@ class ListWindow(wx.Frame):
                 self._load_participants_data()
 
     def _choice_select(self, event, choice_ctrl, other_choice_ctrl):
-
+        # If a group or event was chosen in the registration window's filter, set other drop-down to 'no group/event selected'.
         _selection = choice_ctrl.GetSelection()
-        # print(0)
+
         if _selection is not 0:
-            # print("setting selection")
             other_choice_ctrl.SetSelection(0)
 
     def _load_participants_data(self):
 
+        # Load either entries of groups registered for the selected event or events the selected group is registered for.
         _group_selection = self._groupSelectionField.GetSelection()
         _event_selection = self._eventSelectionField.GetSelection()
 
@@ -445,14 +423,12 @@ class ListWindow(wx.Frame):
             p.p.load_participants(self, "event", _selection_value)
 
     def _menu(self, event):
-        print("_menu called")
+        # Close current window and return to main menu.
         self.Destroy()
         x = e.Entry()
         x._show()
-        # _entry = x.EntryWindow(None, "")
-        # _entry.Show()
 
     def on_close(self, event):
-        print("on_close called")
+        # Clean termination of the programm on X-icon.
         self.Destroy()
         wx.Exit()
